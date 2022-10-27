@@ -99,7 +99,7 @@
 #ifndef _MSC_VER
 #include <sys/ioctl.h>
 #endif
-#if !defined(linux) && !defined(sparc) && !defined(hpux) && !defined(__hpux) && !defined(__CYGWIN32__) && !defined(ultrix)
+#if !defined(linux) && !defined(sparc) && !defined(hpux) && !defined(__hpux) && !defined(__CYGWIN32__) && !defined(ultrix) && !defined(__APPLE__)
 #ifndef _MSC_VER
 #include <sys/select.h>
 #endif
@@ -150,9 +150,8 @@
 #undef CR0
 #endif
 
-#ifdef __FreeBSD__
-#include <termios.h>
-/*#include <sys/ioctl_compat.h>*/
+#if defined(__FreeBSD__) || defined(__APPLE__)
+#include <sys/ioctl_compat.h>
 #else /* !__FreeBSD__ */
 #ifndef _MSC_VER
 #include <termio.h>
@@ -1729,7 +1728,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	mem_bcopy(mem_fn, mem, Write, /*rusage*/regs->regs_R[5],
 		  &rusage, sizeof(struct ss_rusage));
       }
-#elif defined(__unix__) || defined(unix)
+#elif defined(__unix__) || defined(unix) || defined(__APPLE__)
       {
 	struct rusage local_rusage;
 	struct ss_rusage rusage;
@@ -1867,7 +1866,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 #elif defined(_MSC_VER)
 	    /* no utimes() in MSC, use utime() instead */
 	    /*result*/regs->regs_R[2] = utime(buf, NULL);
-#elif defined(__svr4__) || defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha)
+#elif defined(__svr4__) || defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha) || defined(__APPLE__)
 	    /*result*/regs->regs_R[2] = utimes(buf, NULL);
 #elif defined(__CYGWIN32__)
 	    warn("syscall: called utimes()\n");
@@ -1914,7 +1913,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 
 	      /* result */regs->regs_R[2] = utime(buf, &ubuf);
 	    }
-#elif defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha)
+#elif defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha) || defined(__APPLE__)
 	    /* result */regs->regs_R[2] = utimes(buf, tval);
 #elif defined(__CYGWIN32__)
 	    warn("syscall: called utimes()\n");

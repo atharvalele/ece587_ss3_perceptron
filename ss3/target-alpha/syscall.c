@@ -116,7 +116,7 @@
 #include <sys/select.h>
 #endif
 #endif
-#ifdef linux
+#if defined(linux) || defined(__APPLE__)
 #include <sgtty.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
@@ -130,6 +130,7 @@
 #endif /* __FreeBSD__ */
 
 #if defined(__svr4__)
+#include <sys/types.h>
 #include <sys/dirent.h>
 #include <sys/filio.h>
 #elif defined(__osf__)
@@ -139,6 +140,8 @@
  * -- SS-Alpha on. But the function exists in the libraries.
  */
 int getdirentries(int fd, char *buf, int nbytes, long *basep);
+#elif defined(__APPLE__)
+#include <dirent.h>
 #endif
 
 #if defined(__svr4__) || defined(__osf__)
@@ -184,9 +187,8 @@ int getdirentries(int fd, char *buf, int nbytes, long *basep);
 #undef CR0
 #endif
 
-#ifdef __FreeBSD__
-#include <termios.h>
-/*#include <sys/ioctl_compat.h>*/
+#if defined(__FreeBSD__) || defined(__APPLE__)
+#include <sys/ioctl_compat.h>
 #else
 #ifndef _MSC_VER
 #include <termio.h>
@@ -834,7 +836,7 @@ struct xlate_table_t tcpopt_map[] =
 
 struct xlate_table_t socklevel_map[] =
 {
-#if defined(__svr4__) || defined(__osf__) || defined(__FreeBSD__)
+#if defined(__svr4__) || defined(__osf__) || defined(__APPLE__)
   { OSF_SOL_SOCKET,	SOL_SOCKET },
   { OSF_SOL_IP,		IPPROTO_IP },
   { OSF_SOL_TCP,	IPPROTO_TCP },
@@ -2256,7 +2258,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	mem_bcopy(mem_fn, mem, Write, /*rusage*/regs->regs_R[MD_REG_A1],
 		  &rusage, sizeof(struct osf_rusage));
       }
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__APPLE__)
       {
 	struct rusage local_rusage;
 	struct osf_rusage rusage;
@@ -2333,7 +2335,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 #elif defined(_MSC_VER)
             /* no utimes() in MSC, use utime() instead */
 	    /*result*/regs->regs_R[MD_REG_V0] = utime(buf, NULL);
-#elif defined(__svr4__) || defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha)
+#elif defined(__svr4__) || defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha) || defined(__APPLE__)
 	    /*result*/regs->regs_R[MD_REG_V0] = utimes(buf, NULL);
 #elif defined(__CYGWIN32__)
 	    warn("syscall: called utimes\n");
@@ -2380,7 +2382,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 
               /* result */regs->regs_R[MD_REG_V0] = utime(buf, &ubuf);
             }
-#elif defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha)
+#elif defined(__USLC__) || defined(unix) || defined(_AIX) || defined(__alpha) || defined(__APPLE__)
 	    /* result */regs->regs_R[MD_REG_V0] = utimes(buf, tval);
 #elif defined(__CYGWIN32__)
 	    warn("syscall: called utimes\n");
