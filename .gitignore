@@ -53,3 +53,13 @@ dkms.conf
 
 # Results directory
 results/*
+
+# Compiled simulator binaries
+ss3/sim-bpred
+ss3/sim-cache
+ss3/sim-eio
+ss3/sim-fast
+ss3/sim-outorder
+ss3/sim-profile
+ss3/sim-safe
+ss3/sysprobe
