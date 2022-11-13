@@ -18,6 +18,9 @@
 /* Learning threshold */
 #define LEARNING_THRESHOLD      ((1.93 * HISTORY_LENGTH) + 14)
 
+/* Address Width */
+#define ADDRESS_WIDTH           4
+
 /* Perceptron Structure */
 typedef struct {
     int32_t w[HISTORY_LENGTH];
