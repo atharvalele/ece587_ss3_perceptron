@@ -113,6 +113,10 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
         /* no other state */
         break;
 
+    case BPredPerceptron:
+        // pred->dirpred.perceptron = bpred_dir_create();
+        break;
+
     default:
         panic("bogus predictor class");
     }
@@ -120,6 +124,8 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
     /* allocate ret-addr stack */
     switch (class)
     {
+    // We can perhaps just add the perceptron here?
+    case BPredPerceptron:
     case BPredComb:
     case BPred2Level:
     case BPred2bit:
@@ -258,6 +264,10 @@ bpred_dir_create(
         /* no other state */
         break;
 
+    case BPredPerceptron:
+        // Validate input: History Size, (anything else?)
+        break;
+
     default:
         panic("bogus branch direction predictor class");
     }
@@ -372,6 +382,9 @@ void bpred_reg_stats(struct bpred_t *pred,   /* branch predictor instance */
         break;
     case BPredNotTaken:
         name = "bpred_nottaken";
+        break;
+    case BPredPerceptron:
+        name = "bpred_perceptron";
         break;
     default:
         panic("bogus branch predictor class");
@@ -622,9 +635,12 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
             return baddr + sizeof(md_inst_t);
         }
         else
-        {
             return btarget;
         }
+
+    case BPredPerceptron:
+        // bpred_dir_lookup(pred->dirpred.perceptron, baddr);
+        break;
     default:
         panic("bogus predictor class");
     }
@@ -818,6 +834,8 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
         pred->retstack_pushes++;
     }
 #endif /* RAS_BUG_COMPATIBLE */
+
+    // Add perceptron weight update functionality here
 
     /* update L1 table if appropriate */
     /* L1 table is updated unconditionally for combining predictor too */
