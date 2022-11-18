@@ -119,8 +119,8 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
                                     BPredPerceptron,
                                     0,
                                     0,
-                                    shift_width,
-                                    xor);
+                                    shift_width,    /* This is the history length */
+                                    0);
         break;
 
     default:
@@ -271,7 +271,6 @@ bpred_dir_create(
         break;
 
     case BPredPerceptron:
-        // Validate input: History Size, (anything else?)
         info("In dir_create\n");
         pred_dir->config.percpetron.history_length = shift_width;
 
@@ -279,10 +278,16 @@ bpred_dir_create(
         pred_dir->config.percpetron.history = calloc(
                                                 pred_dir->config.percpetron.history_length,
                                                 sizeof(int));
+ 
         info("Allocating memory for perceptrons\n");
         pred_dir->config.percpetron.perceptron_arr = calloc(
                                                         pred_dir->config.percpetron.history_length,
                                                         sizeof(perceptron_t));
+        for (int i = 0; i < pred_dir->config.percpetron.history_length; i++) {
+            perceptron_init(
+                &pred_dir->config.percpetron.perceptron_arr[i],
+                pred_dir->config.percpetron.history_length);
+        }
         break;
 
     default:
@@ -523,6 +528,9 @@ bpred_dir_lookup(struct bpred_dir_t *pred_dir, /* branch dir predictor inst */
 {
     unsigned char *p = NULL;
 
+    /* perceptron number */
+    unsigned p_num = 0;
+
     /* Except for jumps, get a pointer to direction-prediction bits */
     switch (pred_dir->class)
     {
@@ -562,6 +570,18 @@ bpred_dir_lookup(struct bpred_dir_t *pred_dir, /* branch dir predictor inst */
         break;
     case BPredTaken:
     case BPredNotTaken:
+        break;
+
+    case BPredPerceptron:
+        info("Now actually gonna predict\n");
+        p_num = perceptron_select(baddr);
+        perceptron_predict(
+            &pred_dir->config.percpetron.perceptron_arr[p_num],
+            pred_dir->config.percpetron.history,
+            pred_dir->config.percpetron.history_length);
+
+        p = &pred_dir->config.percpetron.perceptron_arr->w[pred_dir->config.percpetron.history_length];
+
         break;
     default:
         panic("bogus branch direction predictor class");
@@ -655,7 +675,8 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
             return btarget;
 
     case BPredPerceptron:
-        // bpred_dir_lookup(pred->dirpred.perceptron, baddr);
+        info("Looking up the branch prediction yay wooohooo\n");
+        dir_update_ptr->pdir1 = bpred_dir_lookup(pred->dirpred.perceptron, baddr);
         break;
     default:
         panic("bogus predictor class");

@@ -192,6 +192,7 @@ struct bpred_update_t {
     unsigned int bimod  : 1;    /* bimodal predictor */
     unsigned int twolev : 1;    /* 2-level predictor */
     unsigned int meta   : 1;    /* meta predictor (0..bimod / 1..2lev) */
+    unsigned int perceptron: 1; /* Perceptron predictor */
   } dir;
 };
 
