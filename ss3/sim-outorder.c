@@ -972,6 +972,20 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
 			  /* btb assoc */btb_config[1],
 			  /* ret-addr stack size */ras_size);
     }
+    else if (!mystricmp(pred_type, "perceptron"))
+    {
+      info("Perceptron Branch Predictor");
+      pred = bpred_create(BPredPerceptron,
+			  /* bimod table size */0,
+			  /* 2lev l1 size */twolev_config[0],
+			  /* 2lev l2 size */twolev_config[1],
+			  /* meta table size */0,
+			  /* history reg size */twolev_config[2],
+			  /* history xor address */twolev_config[3],
+			  /* btb sets */btb_config[0],
+			  /* btb assoc */btb_config[1],
+			  /* ret-addr stack size */ras_size);
+    } 
   else
     fatal("cannot parse predictor type `%s'", pred_type);
 

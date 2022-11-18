@@ -114,7 +114,13 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
         break;
 
     case BPredPerceptron:
-        // pred->dirpred.perceptron = bpred_dir_create();
+        info("calling dir_create()\n");
+        pred->dirpred.perceptron = bpred_dir_create(
+                                    BPredPerceptron,
+                                    0,
+                                    0,
+                                    shift_width,
+                                    xor);
         break;
 
     default:
@@ -266,6 +272,17 @@ bpred_dir_create(
 
     case BPredPerceptron:
         // Validate input: History Size, (anything else?)
+        info("In dir_create\n");
+        pred_dir->config.percpetron.history_length = shift_width;
+
+        info("Allocating memory for history buffer\n");
+        pred_dir->config.percpetron.history = calloc(
+                                                pred_dir->config.percpetron.history_length,
+                                                sizeof(int));
+        info("Allocating memory for perceptrons\n");
+        pred_dir->config.percpetron.perceptron_arr = calloc(
+                                                        pred_dir->config.percpetron.history_length,
+                                                        sizeof(perceptron_t));
         break;
 
     default:
