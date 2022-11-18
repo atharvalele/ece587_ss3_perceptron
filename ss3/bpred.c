@@ -636,7 +636,6 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
         }
         else
             return btarget;
-        }
 
     case BPredPerceptron:
         // bpred_dir_lookup(pred->dirpred.perceptron, baddr);

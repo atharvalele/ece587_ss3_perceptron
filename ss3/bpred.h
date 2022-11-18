@@ -61,6 +61,8 @@
 #include "machine.h"
 #include "stats.h"
 
+#include "bpred-perceptron.h"
+
 /*
  * This module implements a number of branch predictor mechanisms.  The
  * following predictors are supported:
@@ -132,6 +134,11 @@ struct bpred_dir_t {
       int *shiftregs;		/* level-1 history table */
       unsigned char *l2table;	/* level-2 prediction state table */
     } two;
+    struct {
+      int history_length;
+      int *history;
+      perceptron_t *perceptron_arr;
+    } percpetron;
   } config;
 };
 

@@ -23,11 +23,8 @@
 
 /* Perceptron Structure */
 typedef struct {
-    int32_t w[HISTORY_LENGTH];
+    int32_t *w;
 } perceptron_t;
-
-/* Perceptron array for 'NUM_OF_PERCEPTRONS' Global Branch Histories */
-extern perceptron_t perceptrons[NUM_OF_PERCEPTRONS];
 
 /* Function defines */
 
@@ -35,9 +32,9 @@ extern perceptron_t perceptrons[NUM_OF_PERCEPTRONS];
 uint8_t perceptron_select(uint32_t branch_addr);
 
 /* Calculate perceptron p's output */
-int32_t perceptron_predict(uint8_t p);
+int32_t perceptron_predict(perceptron_t *p);
 
 /* Update weights of a perceptron 'p' */
-void perceptron_update_weights(uint8_t p);
+void perceptron_update_weights(perceptron_t *p);
 
 #endif
