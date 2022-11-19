@@ -528,9 +528,6 @@ bpred_dir_lookup(struct bpred_dir_t *pred_dir, /* branch dir predictor inst */
 {
     unsigned char *p = NULL;
 
-    /* perceptron number */
-    unsigned p_num = 0;
-
     /* Except for jumps, get a pointer to direction-prediction bits */
     switch (pred_dir->class)
     {
@@ -571,18 +568,6 @@ bpred_dir_lookup(struct bpred_dir_t *pred_dir, /* branch dir predictor inst */
     case BPredTaken:
     case BPredNotTaken:
         break;
-
-    case BPredPerceptron:
-        info("Now actually gonna predict\n");
-        p_num = perceptron_select(baddr);
-        perceptron_predict(
-            &pred_dir->config.percpetron.perceptron_arr[p_num],
-            pred_dir->config.percpetron.history,
-            pred_dir->config.percpetron.history_length);
-
-        p = &pred_dir->config.percpetron.perceptron_arr->w[pred_dir->config.percpetron.history_length];
-
-        break;
     default:
         panic("bogus branch direction predictor class");
     }
@@ -610,7 +595,8 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
 {
     struct bpred_btb_ent_t *pbtb = NULL;
     int index, i;
-
+    unsigned int p_num = 0;
+    int32_t p_y = 0;
     if (!dir_update_ptr)
         panic("no bpred update record");
 
@@ -675,9 +661,21 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
             return btarget;
 
     case BPredPerceptron:
-        info("Looking up the branch prediction yay wooohooo\n");
-        dir_update_ptr->pdir1 = bpred_dir_lookup(pred->dirpred.perceptron, baddr);
-        break;
+        if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND))
+        {
+            info("Now actually gonna predict\n");
+            p_num = perceptron_select(baddr);
+            p_y = perceptron_predict(
+                                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
+                                pred->dirpred.perceptron->config.percpetron.history,
+                                pred->dirpred.perceptron->config.percpetron.history_length);
+            info("Calculated p_y %d\n", p_y);
+            if (p_y <= 0)
+                return  baddr + sizeof(md_inst_t);
+            else 
+                return btarget;
+        }
+        return  baddr + sizeof(md_inst_t);
     default:
         panic("bogus predictor class");
     }
@@ -801,7 +799,8 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
     struct bpred_btb_ent_t *pbtb = NULL;
     struct bpred_btb_ent_t *lruhead = NULL, *lruitem = NULL;
     int index, i;
-
+    int p_y;
+    int p_num;
     /* don't change bpred state for non-branch instructions or if this
      * is a stateless predictor*/
     if (!(MD_OP_FLAGS(op) & F_CTRL))
@@ -888,6 +887,33 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
             (pred->dirpred.twolev->config.two.shiftregs[l1index] << 1) | (!!taken);
         pred->dirpred.twolev->config.two.shiftregs[l1index] =
             shift_reg & ((1 << pred->dirpred.twolev->config.two.shift_width) - 1);
+    }
+
+    if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND) &&
+        pred->class == BPredPerceptron)
+    {
+        p_y = pred->dirpred.perceptron->config.percpetron.output;
+        p_num = perceptron_select(baddr);
+        if ((!!pred_taken == !!taken) || p_y < learning_threshold)
+        {
+            info("We correct and we updatin'\n");
+            perceptron_update_weights(
+                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
+                pred->dirpred.perceptron->config.percpetron.history_length,
+                1
+            );
+        }
+        else
+        {
+            info("We are wrong but let's update updatin'\n");
+            perceptron_update_weights(
+                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
+                pred->dirpred.perceptron->config.percpetron.history_length,
+                -1
+            );
+
+        }
+
     }
 
     /* find BTB entry if it's a taken branch (don't allocate for non-taken) */

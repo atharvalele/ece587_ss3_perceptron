@@ -10,6 +10,8 @@
 #include "machine.h"
 #include "bpred-perceptron.h"
 
+int32_t learning_threshold;
+
 /**
  * perceptron init
  * 
@@ -19,6 +21,7 @@
 void perceptron_init(perceptron_t *p, uint8_t hist_len)
 {
     p->w = calloc(hist_len, sizeof(int32_t));
+    learning_threshold = (1.93 * hist_len) + 14;
 }
 
 /**
@@ -55,7 +58,23 @@ int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
         y += p->w[i] * hist[i];
     }
 
-    info("do we reach here?");
+    info("do we reach here? Yes %d", y);
     
     return y;
+}
+
+/**
+ * @brief 
+ * 
+ * @param p 
+ * @param hist_len 
+ * @param correct 
+ */
+void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, uint8_t correct)
+{
+    for (int i = 0; i < hist_len; i++)
+    {
+        p->w[i] += correct;
+    }
+    p->bias += correct;
 }

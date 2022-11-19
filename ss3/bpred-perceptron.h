@@ -23,6 +23,8 @@ typedef struct {
     int32_t bias;
 } perceptron_t;
 
+extern int32_t learning_threshold;
+
 /* Function defines */
 
 void perceptron_init(perceptron_t *p, uint8_t hist_len);
@@ -34,6 +36,6 @@ uint8_t perceptron_select(uint32_t branch_addr);
 int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len);
 
 /* Update weights of a perceptron 'p' */
-void perceptron_update_weights(perceptron_t *p, uint8_t hist_len);
+void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, uint8_t correct);
 
 #endif
