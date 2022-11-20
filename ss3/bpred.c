@@ -661,21 +661,19 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
             return btarget;
 
     case BPredPerceptron:
-        if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND))
+        p_num = perceptron_select(baddr);
+        p_y = perceptron_predict(
+                            &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
+                            pred->dirpred.perceptron->config.percpetron.history,
+                            pred->dirpred.perceptron->config.percpetron.history_length);
+            
+        if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND) && p_y <= 0)
         {
             info("Now actually gonna predict\n");
-            p_num = perceptron_select(baddr);
-            p_y = perceptron_predict(
-                                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
-                                pred->dirpred.perceptron->config.percpetron.history,
-                                pred->dirpred.perceptron->config.percpetron.history_length);
-            info("Calculated p_y %d\n", p_y);
-            if (p_y <= 0)
-                return  baddr + sizeof(md_inst_t);
-            else 
-                return btarget;
+            return  baddr + sizeof(md_inst_t);
         }
-        return  baddr + sizeof(md_inst_t);
+        else 
+            return  btarget;
     default:
         panic("bogus predictor class");
     }

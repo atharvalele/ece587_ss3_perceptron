@@ -34,7 +34,7 @@ uint8_t perceptron_select(uint32_t branch_addr)
 {
     info("Selecting perceptron\n");
 
-    return ((branch_addr >> ADDRESS_WIDTH) % NUM_OF_PERCEPTRONS);
+    return ((branch_addr >> 3) % NUM_OF_PERCEPTRONS);
 }
 
 /**
@@ -45,7 +45,6 @@ uint8_t perceptron_select(uint32_t branch_addr)
  */
 int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
 {
-    info("%d\n", hist_len);
     info("calculting perceptron output\n");
     /* Prediction output */
     int32_t y;
