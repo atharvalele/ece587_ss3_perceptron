@@ -666,10 +666,9 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
                             &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
                             pred->dirpred.perceptron->config.percpetron.history,
                             pred->dirpred.perceptron->config.percpetron.history_length);
-            
+        info("Predicting branch: <baddr> <taken>: 0x%X, %d", baddr, (p_y ? 1 : 0));
         if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND) && p_y <= 0)
         {
-            info("Now actually gonna predict\n");
             return  baddr + sizeof(md_inst_t);
         }
         else 
@@ -887,29 +886,31 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
             shift_reg & ((1 << pred->dirpred.twolev->config.two.shift_width) - 1);
     }
 
-    if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND) &&
-        pred->class == BPredPerceptron)
+    if (((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND)) &&
+        (pred->class == BPredPerceptron))
     {
         p_y = pred->dirpred.perceptron->config.percpetron.output;
         p_num = perceptron_select(baddr);
-        if ((!!pred_taken == !!taken) || p_y < learning_threshold)
+
+        info("Need to update history register");
+
+        if (!(!!pred_taken == !!taken) || p_y < learning_threshold)
         {
-            info("We correct and we updatin'\n");
-            perceptron_update_weights(
-                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
-                pred->dirpred.perceptron->config.percpetron.history_length,
-                1
-            );
-        }
-        else
-        {
-            info("We are wrong but let's update updatin'\n");
+            info("Wrong Prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
             perceptron_update_weights(
                 &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
                 pred->dirpred.perceptron->config.percpetron.history_length,
                 -1
             );
-
+        }
+        else
+        {
+            info("Correct prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
+            perceptron_update_weights(
+                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
+                pred->dirpred.perceptron->config.percpetron.history_length,
+                1
+            );
         }
 
     }

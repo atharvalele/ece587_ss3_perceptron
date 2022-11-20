@@ -11,17 +11,20 @@
 #include "bpred-perceptron.h"
 
 int32_t learning_threshold;
+uint8_t num_of_perceptrons;
 
 /**
  * perceptron init
  * 
  * allocate memory for all the weights
+ * assign learning threshold and number of perceptrons
  * 
  */
 void perceptron_init(perceptron_t *p, uint8_t hist_len)
 {
     p->w = calloc(hist_len, sizeof(int32_t));
     learning_threshold = (1.93 * hist_len) + 14;
+    num_of_perceptrons = hist_len;
 }
 
 /**
@@ -32,9 +35,11 @@ void perceptron_init(perceptron_t *p, uint8_t hist_len)
  */
 uint8_t perceptron_select(uint32_t branch_addr)
 {
-    info("Selecting perceptron\n");
+    uint8_t p = (branch_addr >> 3) % num_of_perceptrons;
 
-    return ((branch_addr >> 3) % NUM_OF_PERCEPTRONS);
+    info("\nSelecting perceptron: %d", p);
+
+    return p;
 }
 
 /**
@@ -45,7 +50,6 @@ uint8_t perceptron_select(uint32_t branch_addr)
  */
 int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
 {
-    info("calculting perceptron output\n");
     /* Prediction output */
     int32_t y;
 
@@ -57,7 +61,7 @@ int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
         y += p->w[i] * hist[i];
     }
 
-    info("do we reach here? Yes %d", y);
+    info("p_out = %d", y);
     
     return y;
 }
@@ -69,11 +73,20 @@ int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
  * @param hist_len 
  * @param correct 
  */
-void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, uint8_t correct)
+void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, int8_t correct)
 {
     for (int i = 0; i < hist_len; i++)
     {
         p->w[i] += correct;
     }
     p->bias += correct;
+}
+
+/* Update saved history */
+void perceptron_update_history(uint8_t hist_len, int8_t taken)
+{
+    uint8_t h;
+    for (h = 0; h < hist_len; h++){
+
+    }
 }
