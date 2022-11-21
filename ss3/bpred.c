@@ -896,7 +896,12 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
     {
         p_y = pred->dirpred.perceptron->config.percpetron.output;
 
-        info("Need to update history register");
+        // Update branch history
+        info("Updating history register");
+        perceptron_update_history(
+            pred->dirpred.perceptron->config.percpetron.history_length,
+            (taken ? 1 : -1),
+            pred->dirpred.perceptron->config.percpetron.history);
 
         if (!(!!pred_taken == !!taken))
         {
@@ -910,7 +915,7 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
         }
 
         // Do we need to update weights?
-        if (!(!!pred_taken == !!taken) || (p_y < learning_threshold)) {
+        if (!(!!pred_taken == !!taken) || (abs(p_y) < learning_threshold)) {
             info("Updating for baddr: 0x%X", baddr);
             if (!(!!pred_taken == !!taken))
                 info("Updating weights due to misprediction threshold");
@@ -925,13 +930,6 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
                 ((!!pred_taken == !!taken) ? 1 : -1)
             );
         }
-
-        // Update branch history
-        perceptron_update_history(
-            pred->dirpred.perceptron->config.percpetron.history_length,
-            taken,
-            pred->dirpred.perceptron->config.percpetron.history);
-
     }
 
     /* find BTB entry if it's a taken branch (don't allocate for non-taken) */
