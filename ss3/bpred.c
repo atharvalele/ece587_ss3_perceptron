@@ -666,7 +666,7 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
                             &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
                             pred->dirpred.perceptron->config.percpetron.history,
                             pred->dirpred.perceptron->config.percpetron.history_length);
-        info("Predicting branch: <baddr> <taken>: 0x%X, %d", baddr, (p_y ? 1 : 0));
+        info("Predicting branch: <baddr> <taken>: 0x%X, %d", baddr, (p_y > 0 ? 1 : -1));
         if ((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND) && p_y <= 0)
         {
             return  baddr + sizeof(md_inst_t);
@@ -894,24 +894,27 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
 
         info("Need to update history register");
 
-        if (!(!!pred_taken == !!taken) || p_y < learning_threshold)
+        if (!(!!pred_taken == !!taken))
         {
-            info("Wrong Prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
-            perceptron_update_weights(
-                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
-                pred->dirpred.perceptron->config.percpetron.history_length,
-                -1
-            );
+            // Misprediction
+            info("Wrong prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
         }
         else
         {
+            // Correct prediction
             info("Correct prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
+        }
+
+        // Do we need to update weights?
+        if (!(!!pred_taken == !!taken) || (p_y < learning_threshold)) {
             perceptron_update_weights(
                 &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
                 pred->dirpred.perceptron->config.percpetron.history_length,
-                1
+                ((!!pred_taken == !!taken) ? 1 : -1)
             );
         }
+
+        // Update branch history
         perceptron_update_history(
             pred->dirpred.perceptron->config.percpetron.history_length,
             taken,
