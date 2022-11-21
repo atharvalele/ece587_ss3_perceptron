@@ -73,13 +73,20 @@ int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
  * @param hist_len 
  * @param correct 
  */
-void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, int8_t correct)
+void perceptron_update_weights(perceptron_t *p, int *hist, uint8_t hist_len, int8_t correct)
 {
     for (int i = 0; i < hist_len; i++)
     {
-        p->w[i] += correct;
+        if (!!correct == !!hist[i])
+            p->w[i] += 1;
+        else
+            p->w[i] -= 1;
+        
+        info("w[%d] = %d", i, p->w[i]);
     }
+    
     p->bias += correct;
+    info("bias =  %d", p->bias);
 }
 
 /* Update saved history */

@@ -37,7 +37,7 @@ uint8_t perceptron_select(uint32_t branch_addr);
 int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len);
 
 /* Update weights of a perceptron 'p' */
-void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, int8_t correct);
+void perceptron_update_weights(perceptron_t *p, int *hist, uint8_t hist_len, int8_t correct);
 
 /* Update saved history */
 void perceptron_update_history(uint8_t hist_len, int8_t taken, int32_t *history);
