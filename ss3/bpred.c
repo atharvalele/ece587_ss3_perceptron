@@ -912,6 +912,10 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
                 1
             );
         }
+        perceptron_update_history(
+            pred->dirpred.perceptron->config.percpetron.history_length,
+            taken,
+            pred->dirpred.perceptron->config.percpetron.history);
 
     }
 

@@ -40,6 +40,7 @@ int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len);
 void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, int8_t correct);
 
 /* Update saved history */
-void perceptron_update_history(uint8_t hist_len, int8_t taken);
+void perceptron_update_history(uint8_t hist_len, int8_t taken, int32_t *history);
 
+void display_history(int32_t *hist, uint8_t hist_len);
 #endif

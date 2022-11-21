@@ -83,10 +83,20 @@ void perceptron_update_weights(perceptron_t *p, uint8_t hist_len, int8_t correct
 }
 
 /* Update saved history */
-void perceptron_update_history(uint8_t hist_len, int8_t taken)
+void perceptron_update_history(uint8_t hist_len, int8_t taken, int32_t *history)
+{
+    uint8_t h;
+    for (h = hist_len; h > 0; h--){
+        history[h] = history[h-1];
+    }
+    history[0] = taken;
+    display_history(history, hist_len);
+}
+
+void display_history(int32_t *hist, uint8_t hist_len)
 {
     uint8_t h;
     for (h = 0; h < hist_len; h++){
-
+        info("Hist element %d: %d", h, hist[h]);
     }
 }
