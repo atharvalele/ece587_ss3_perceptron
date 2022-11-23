@@ -119,7 +119,7 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
                                     BPredPerceptron,
                                     0,
                                     0,
-                                    12,    /* This is the history length */
+                                    28,    /* This is the history length */
                                     0);
         break;
 
@@ -669,15 +669,8 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
                                 pred->dirpred.perceptron->config.percpetron.history,
                                 pred->dirpred.perceptron->config.percpetron.history_length);
             info("Predicting branch: <baddr> <taken>: 0x%X, %s", baddr, (p_y > 0 ? "Taken" : "Not taken"));
-
-            // Taken or not..?
-            if (p_y <= 0)
-                return (baddr + sizeof(md_inst_t));
-            else
-                return btarget;
         }
-        else 
-            return (baddr + sizeof(md_inst_t));
+        break;
     default:
         panic("bogus predictor class");
     }
@@ -753,16 +746,22 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
     if (pbtb == NULL)
     {
         /* BTB miss -- just return a predicted direction */
-        return ((*(dir_update_ptr->pdir1) >= 2)
-                    ? /* taken */ 1
-                    : /* not taken */ 0);
+        if (pred->class == BPredPerceptron)
+            return (p_y > 0 ? 1 : 0);
+        else 
+            return ((*(dir_update_ptr->pdir1) >= 2)
+                        ? /* taken */ 1
+                        : /* not taken */ 0);
     }
     else
     {
         /* BTB hit, so return target if it's a predicted-taken branch */
-        return ((*(dir_update_ptr->pdir1) >= 2)
-                    ? /* taken */ pbtb->target
-                    : /* not taken */ 0);
+        if (pred->class == BPredPerceptron)
+            return (p_y > 0 ? pbtb->target : 0);
+        else
+            return ((*(dir_update_ptr->pdir1) >= 2)
+                        ? /* taken */ pbtb->target
+                        : /* not taken */ 0);
     }
 }
 
@@ -916,7 +915,7 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
 
         // Do we need to update weights?
         if (!(!!pred_taken == !!taken) || (abs(p_y) < learning_threshold)) {
-            info("Updating for baddr: 0x%X", baddr);
+            debug("Updating for baddr: 0x%X", baddr);
             if (!(!!pred_taken == !!taken))
                 info("Updating weights due to misprediction threshold");
             if (p_y < learning_threshold)
