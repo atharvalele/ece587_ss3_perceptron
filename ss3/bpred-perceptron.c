@@ -37,7 +37,7 @@ uint8_t perceptron_select(uint32_t branch_addr)
 {
     uint8_t p = (branch_addr >> 3) % num_of_perceptrons;
 
-    info("\nSelecting perceptron: %d", p);
+    debug("\nSelecting perceptron: %d", p);
 
     return p;
 }
@@ -61,7 +61,7 @@ int32_t perceptron_predict(perceptron_t *p, int *hist, uint8_t hist_len)
         y += p->w[i] * hist[i];
     }
 
-    info("p_out = %d", y);
+    debug("p_out = %d", y);
     
     return y;
 }
@@ -82,11 +82,11 @@ void perceptron_update_weights(perceptron_t *p, int *hist, uint8_t hist_len, int
         else
             p->w[i] -= 1;
         
-        info("w[%d] = %d", i, p->w[i]);
+        debug("w[%d] = %d", i, p->w[i]);
     }
     
     p->bias += correct;
-    info("bias =  %d", p->bias);
+    debug("bias =  %d", p->bias);
 }
 
 /* Update saved history */
@@ -104,6 +104,6 @@ void display_history(int32_t *hist, uint8_t hist_len)
 {
     uint8_t h;
     for (h = 0; h < hist_len; h++){
-        info("Hist element %d: %d", h, hist[h]);
+        debug("Hist element %d: %d", h, hist[h]);
     }
 }

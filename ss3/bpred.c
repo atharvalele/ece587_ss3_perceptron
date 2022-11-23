@@ -114,7 +114,7 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
         break;
 
     case BPredPerceptron:
-        info("calling dir_create()\n");
+        debug("calling dir_create()\n");
         pred->dirpred.perceptron = bpred_dir_create(
                                     BPredPerceptron,
                                     0,
@@ -271,15 +271,15 @@ bpred_dir_create(
         break;
 
     case BPredPerceptron:
-        info("In dir_create\n");
+        debug("In dir_create\n");
         pred_dir->config.percpetron.history_length = shift_width;
 
-        info("Allocating memory for history buffer\n");
+        debug("Allocating memory for history buffer\n");
         pred_dir->config.percpetron.history = calloc(
                                                 pred_dir->config.percpetron.history_length,
                                                 sizeof(int));
  
-        info("Allocating memory for perceptrons\n");
+        debug("Allocating memory for perceptrons\n");
         pred_dir->config.percpetron.perceptron_arr = calloc(
                                                         pred_dir->config.percpetron.history_length,
                                                         sizeof(perceptron_t));
@@ -668,7 +668,7 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
                                 &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
                                 pred->dirpred.perceptron->config.percpetron.history,
                                 pred->dirpred.perceptron->config.percpetron.history_length);
-            info("Predicting branch: <baddr> <taken>: 0x%X, %s", baddr, (p_y > 0 ? "Taken" : "Not taken"));
+            debug("Predicting branch: <baddr> <taken>: 0x%X, %s", baddr, (p_y > 0 ? "Taken" : "Not taken"));
         }
         break;
     default:
@@ -896,7 +896,7 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
         p_y = pred->dirpred.perceptron->config.percpetron.output;
 
         // Update branch history
-        info("Updating history register");
+        debug("Updating history register");
         perceptron_update_history(
             pred->dirpred.perceptron->config.percpetron.history_length,
             (taken ? 1 : -1),
@@ -905,21 +905,21 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
         if (!(!!pred_taken == !!taken))
         {
             // Misprediction
-            info("Wrong prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
+            debug("Wrong prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
         }
         else
         {
             // Correct prediction
-            info("Correct prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
+            debug("Correct prediction: <pred> <actual>: %d, %d", !!pred_taken, !!taken);
         }
 
         // Do we need to update weights?
         if (!(!!pred_taken == !!taken) || (abs(p_y) < learning_threshold)) {
             debug("Updating for baddr: 0x%X", baddr);
             if (!(!!pred_taken == !!taken))
-                info("Updating weights due to misprediction threshold");
+                debug("Updating weights due to misprediction threshold");
             if (p_y < learning_threshold)
-                info("Updating weights due to learning threshold");
+                debug("Updating weights due to learning threshold");
 
             p_num = perceptron_select(baddr);
             perceptron_update_weights(
