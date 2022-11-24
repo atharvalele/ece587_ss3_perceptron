@@ -669,6 +669,7 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
                                 pred->dirpred.perceptron->config.percpetron.history,
                                 pred->dirpred.perceptron->config.percpetron.history_length);
             debug("Predicting branch: <baddr> <taken>: 0x%X, %s", baddr, (p_y > 0 ? "Taken" : "Not taken"));
+            pred->dirpred.perceptron->config.percpetron.output = p_y;
         }
         break;
     default:

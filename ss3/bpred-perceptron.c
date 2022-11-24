@@ -82,10 +82,19 @@ void perceptron_update_weights(perceptron_t *p, int *hist, uint8_t hist_len, int
         else
             p->w[i] -= 1;
         
+        // if (p->w[i] > 255)
+        //     p->w[i] = 255;
+        // if (p->w[i] < -255)
+        //     p->w[i] = -255;
+
         debug("w[%d] = %d", i, p->w[i]);
     }
     
     p->bias += correct;
+    // if (p->bias > 255)
+    //     p->bias = 255;
+    // if (p->bias < -255)
+    //     p->bias = -255;
     debug("bias =  %d", p->bias);
 }
 
