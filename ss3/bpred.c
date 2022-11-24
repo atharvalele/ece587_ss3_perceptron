@@ -272,21 +272,21 @@ bpred_dir_create(
 
     case BPredPerceptron:
         debug("In dir_create\n");
-        pred_dir->config.percpetron.history_length = shift_width;
+        pred_dir->config.perceptron.history_length = shift_width;
 
         debug("Allocating memory for history buffer\n");
-        pred_dir->config.percpetron.history = calloc(
-                                                pred_dir->config.percpetron.history_length,
+        pred_dir->config.perceptron.history = calloc(
+                                                pred_dir->config.perceptron.history_length,
                                                 sizeof(int));
  
         debug("Allocating memory for perceptrons\n");
-        pred_dir->config.percpetron.perceptron_arr = calloc(
-                                                        pred_dir->config.percpetron.history_length,
+        pred_dir->config.perceptron.perceptron_arr = calloc(
+                                                        pred_dir->config.perceptron.history_length,
                                                         sizeof(perceptron_t));
-        for (int i = 0; i < pred_dir->config.percpetron.history_length; i++) {
+        for (int i = 0; i < pred_dir->config.perceptron.history_length; i++) {
             perceptron_init(
-                &pred_dir->config.percpetron.perceptron_arr[i],
-                pred_dir->config.percpetron.history_length);
+                &pred_dir->config.perceptron.perceptron_arr[i],
+                pred_dir->config.perceptron.history_length);
         }
         break;
 
@@ -665,11 +665,11 @@ bpred_lookup(struct bpred_t *pred,                  /* branch predictor instance
         {
             p_num = perceptron_select(baddr);
             p_y = perceptron_predict(
-                                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num], 
-                                pred->dirpred.perceptron->config.percpetron.history,
-                                pred->dirpred.perceptron->config.percpetron.history_length);
+                                &pred->dirpred.perceptron->config.perceptron.perceptron_arr[p_num], 
+                                pred->dirpred.perceptron->config.perceptron.history,
+                                pred->dirpred.perceptron->config.perceptron.history_length);
             debug("Predicting branch: <baddr> <taken>: 0x%X, %s", baddr, (p_y > 0 ? "Taken" : "Not taken"));
-            pred->dirpred.perceptron->config.percpetron.output = p_y;
+            pred->dirpred.perceptron->config.perceptron.output = p_y;
         }
         break;
     default:
@@ -894,14 +894,14 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
     if (((MD_OP_FLAGS(op) & (F_CTRL | F_UNCOND)) != (F_CTRL | F_UNCOND)) &&
         (pred->class == BPredPerceptron))
     {
-        p_y = pred->dirpred.perceptron->config.percpetron.output;
+        p_y = pred->dirpred.perceptron->config.perceptron.output;
 
         // Update branch history
         debug("Updating history register");
         perceptron_update_history(
-            pred->dirpred.perceptron->config.percpetron.history_length,
+            pred->dirpred.perceptron->config.perceptron.history_length,
             (taken ? 1 : -1),
-            pred->dirpred.perceptron->config.percpetron.history);
+            pred->dirpred.perceptron->config.perceptron.history);
 
         if (!(!!pred_taken == !!taken))
         {
@@ -924,9 +924,9 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
 
             p_num = perceptron_select(baddr);
             perceptron_update_weights(
-                &pred->dirpred.perceptron->config.percpetron.perceptron_arr[p_num],
-                pred->dirpred.perceptron->config.percpetron.history,
-                pred->dirpred.perceptron->config.percpetron.history_length,
+                &pred->dirpred.perceptron->config.perceptron.perceptron_arr[p_num],
+                pred->dirpred.perceptron->config.perceptron.history,
+                pred->dirpred.perceptron->config.perceptron.history_length,
                 ((!!pred_taken == !!taken) ? 1 : -1)
             );
         }

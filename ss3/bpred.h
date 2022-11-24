@@ -139,7 +139,7 @@ struct bpred_dir_t {
       int *history;
       int output;
       perceptron_t *perceptron_arr;
-    } percpetron;
+    } perceptron;
   } config;
 };
 
