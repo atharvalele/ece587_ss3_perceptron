@@ -113,6 +113,10 @@ static int fetch_speed;
 /* branch predictor type {nottaken|taken|perfect|bimod|2lev} */
 static char *pred_type;
 
+/* Perceptron predictor confing */
+static int perceptron_nelt = 2;
+static int perceptron_config[1] = { 28, 28 }; /* Number of perceptrons, History Length*/
+
 /* bimodal predictor config (<table_size>) */
 static int bimod_nelt = 1;
 static int bimod_config[1] =
@@ -654,6 +658,12 @@ sim_reg_options(struct opt_odb_t *odb)
                  &pred_type, /* default */"bimod",
                  /* print */TRUE, /* format */NULL);
 
+  opt_reg_int_list(odb, "-bpred:perceptron",
+ 		   "perceptron predictor config (<table size>)",
+ 		   perceptron_config, perceptron_nelt, &perceptron_nelt,
+ 		   /* default */perceptron_config,
+ 		   /* print */TRUE, /* format */NULL, /* !accrue */FALSE);
+
   opt_reg_int_list(odb, "-bpred:bimod",
 		   "bimodal predictor config (<table size>)",
 		   bimod_config, bimod_nelt, &bimod_nelt,
@@ -980,8 +990,8 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
 			  /* 2lev l1 size */twolev_config[0],
 			  /* 2lev l2 size */twolev_config[1],
 			  /* meta table size */0,
-			  /* history reg size */twolev_config[2],
-			  /* history xor address */twolev_config[3],
+			  /* history length */perceptron_config[0],
+			  /* No. of perceps */perceptron_config[1],
 			  /* btb sets */btb_config[0],
 			  /* btb assoc */btb_config[1],
 			  /* ret-addr stack size */ras_size);

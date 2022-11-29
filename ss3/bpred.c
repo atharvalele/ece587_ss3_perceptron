@@ -119,8 +119,8 @@ bpred_create(enum bpred_class class,     /* type of predictor to create */
                                     BPredPerceptron,
                                     0,
                                     0,
-                                    28,    /* This is the history length */
-                                    0);
+                                    shift_width,    /* This is the history length */
+                                    xor);           /* Number of perceptrons */
         break;
 
     default:
@@ -273,6 +273,9 @@ bpred_dir_create(
     case BPredPerceptron:
         debug("In dir_create\n");
         pred_dir->config.perceptron.history_length = shift_width;
+        
+        num_of_perceptrons = xor;
+        learning_threshold = (1.93 * pred_dir->config.perceptron.history_length) + 14;  // Acc. to paper
 
         debug("Allocating memory for history buffer\n");
         pred_dir->config.perceptron.history = calloc(
@@ -281,9 +284,9 @@ bpred_dir_create(
  
         debug("Allocating memory for perceptrons\n");
         pred_dir->config.perceptron.perceptron_arr = calloc(
-                                                        pred_dir->config.perceptron.history_length,
+                                                        num_of_perceptrons,
                                                         sizeof(perceptron_t));
-        for (int i = 0; i < pred_dir->config.perceptron.history_length; i++) {
+        for (int i = 0; i < num_of_perceptrons; i++) {
             perceptron_init(
                 &pred_dir->config.perceptron.perceptron_arr[i],
                 pred_dir->config.perceptron.history_length);
@@ -900,7 +903,7 @@ void bpred_update(struct bpred_t *pred,                  /* branch predictor ins
         debug("Updating history register");
         perceptron_update_history(
             pred->dirpred.perceptron->config.perceptron.history_length,
-            (taken ? 1 : -1),
+            taken,
             pred->dirpred.perceptron->config.perceptron.history);
 
         if (!(!!pred_taken == !!taken))

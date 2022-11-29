@@ -23,8 +23,6 @@ uint8_t num_of_perceptrons;
 void perceptron_init(perceptron_t *p, uint8_t hist_len)
 {
     p->w = calloc(hist_len, sizeof(int32_t));
-    learning_threshold = (1.93 * hist_len) + 14;
-    num_of_perceptrons = hist_len;
 }
 
 /**
@@ -82,19 +80,23 @@ void perceptron_update_weights(perceptron_t *p, int *hist, uint8_t hist_len, int
         else
             p->w[i] -= 1;
         
-        // if (p->w[i] > 255)
-        //     p->w[i] = 255;
-        // if (p->w[i] < -255)
-        //     p->w[i] = -255;
+        // Limit weights to 9-bit values
+        if (p->w[i] > 255)
+            p->w[i] = 255;
+        if (p->w[i] < -255)
+            p->w[i] = -255;
 
         debug("w[%d] = %d", i, p->w[i]);
     }
     
     p->bias += correct;
-    // if (p->bias > 255)
-    //     p->bias = 255;
-    // if (p->bias < -255)
-    //     p->bias = -255;
+
+    // Limit bias to 9-bit values
+    if (p->bias > 255)
+        p->bias = 255;
+    if (p->bias < -255)
+        p->bias = -255;
+
     debug("bias =  %d", p->bias);
 }
 
